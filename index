@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Direito a Férias (INSS)</title>
+<style>
+  /* ===== Paleta institucional — ajuste aqui se precisar ===== */
+  :root{
+    --primary:#003F7D;      /* azul institucional */
+    --primary-dark:#002B57;
+    --accent:#00897B;       /* verde-azulado */
+    --bg:#F4F6F9;
+    --surface:#FFFFFF;
+    --text:#1A2433;
+    --muted:#5B6B7F;
+    --border:#D9E0E8;
+    --soft:#EEF3F8;
+    --success:#1B7F4B; --success-bg:#EAF6EF;
+    --danger:#B42318;  --danger-bg:#FDECEA;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.5}
+
+  .topbar{background:var(--primary);color:#fff;border-bottom:4px solid var(--accent)}
+  .topbar .in{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .org{font-weight:700;letter-spacing:.02em}
+  .org small{display:block;font-weight:400;opacity:.8;font-size:12px;letter-spacing:0}
+  .ref{font-size:12px;opacity:.85;border:1px solid rgba(255,255,255,.35);padding:3px 10px;border-radius:3px;white-space:nowrap}
+
+  .container{max-width:1080px;margin:0 auto;padding:0 16px 48px}
+  .pagehead{padding:28px 0 22px;border-bottom:1px solid var(--border);margin-bottom:24px}
+  .pagehead h1{margin:0 0 4px;font-size:24px;font-weight:600;color:var(--primary-dark)}
+  .pagehead p{margin:0;color:var(--muted)}
+
+  main{display:grid;grid-template-columns:7fr 5fr;gap:24px;align-items:start}
+  @media(max-width:900px){main{grid-template-columns:1fr}}
+  .col{display:flex;flex-direction:column;gap:20px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:22px}
+  .card h2{margin:0 0 16px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);display:flex;justify-content:space-between;align-items:center}
+  .tag{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--border);padding:2px 8px;border-radius:3px;letter-spacing:0;text-transform:none}
+
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text)}
+  input[type=date]{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:4px;background:#fff;font:inherit;color:var(--text)}
+  input[type=date]:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,63,125,.12)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:600px){.grid2{grid-template-columns:1fr}}
+  .hint{font-size:13px;color:var(--muted);margin:12px 0 0}
+
+  .af{display:grid;grid-template-columns:28px 1fr 32px;gap:12px;align-items:end;padding:12px 0;border-top:1px solid var(--soft)}
+  .af:first-child{border-top:none;padding-top:0}
+  .af .num{width:24px;height:24px;border-radius:50%;background:var(--soft);color:var(--primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:7px}
+  .af .del{width:32px;height:38px;border:1px solid var(--border);background:#fff;border-radius:4px;color:var(--muted);cursor:pointer;font-size:14px}
+  .af .del:hover{color:var(--danger);border-color:var(--danger)}
+
+  .btn{font:inherit;font-weight:600;border-radius:4px;padding:10px 18px;cursor:pointer;border:1px solid transparent}
+  .btn-primary{background:var(--primary);color:#fff;flex:1}
+  .btn-primary:hover{background:var(--primary-dark)}
+  .btn-ghost{background:#fff;color:var(--primary);border-color:var(--border)}
+  .btn-ghost:hover{border-color:var(--primary)}
+  .btn-link{background:none;border:1px dashed var(--border);color:var(--primary);width:100%;margin-top:12px}
+  .btn-link:hover{border-color:var(--primary);background:var(--soft)}
+  .actions{display:flex;gap:12px}
+  @media(max-width:600px){.actions{flex-direction:column}}
+
+  .erro{padding:10px 14px;background:var(--danger-bg);border-left:3px solid var(--danger);color:var(--danger);font-size:14px;border-radius:3px}
+
+  .empty{text-align:center;padding:48px 22px;color:var(--muted)}
+  .empty strong{display:block;color:var(--text);margin-bottom:4px}
+
+  .reshead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+  .reshead h3{margin:0;font-size:16px;color:var(--primary-dark)}
+  .reshead span{font-size:12px;color:var(--muted)}
+
+  .res{border-left:4px solid var(--success);margin-bottom:14px}
+  .res.lost{border-left-color:var(--danger)}
+  .res .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .exer{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .pill-novo{font-size:11px;color:var(--accent);border:1px solid var(--accent);padding:1px 6px;border-radius:3px;margin-left:6px;font-weight:600}
+  .periodo{font-size:17px;font-weight:600;margin-top:2px}
+  .periodo span{color:var(--muted);font-weight:400}
+  .status{font-size:12px;font-weight:700;padding:4px 10px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em}
+  .status.ok{background:var(--success-bg);color:var(--success)}
+  .status.lost{background:var(--danger-bg);color:var(--danger)}
+  .meta{display:flex;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--soft);font-size:14px;color:var(--muted)}
+  .meta b{color:var(--text);font-size:16px}
+  .meta b.red{color:var(--danger)}
+  .exp{font-size:13px;color:var(--muted);margin:8px 0 0}
+
+  .novo{background:var(--soft);border:1px solid #CFDCEA;border-radius:6px;padding:14px 16px;margin:4px 0 14px;font-size:14px}
+  .novo b{color:var(--primary)}
+
+  .regra h2{margin-bottom:12px}
+  .regra ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+  .regra li{margin-bottom:8px}
+  .ok-t{color:var(--success);font-weight:600}.lost-t{color:var(--danger);font-weight:600}
+
+  footer{margin-top:32px;font-size:12px;color:var(--muted);text-align:center}
+  @media print{.topbar{-webkit-print-color-adjust:exact;print-color-adjust:exact}.actions,.btn-link,.del{display:none}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="in">
+    <div class="org">HU Brasil<small>Gestão de Pessoas</small></div>
+    <span class="ref">Art. 133, III — CLT</span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="pagehead">
+    <h1>Calculadora de Direito a Férias</h1>
+    <p>Impacto do afastamento pelo INSS sobre o período aquisitivo de férias.</p>
+  </div>
+
+  <main>
+    <div class="col">
+      <section class="card">
+        <h2>Período aquisitivo</h2>
+        <div class="grid2">
+          <div><label for="inicio">Início do período</label><input type="date" id="inicio"></div>
+        </div>
+        <p class="hint">Os períodos subsequentes e eventuais novos ciclos são calculados automaticamente.</p>
+      </section>
+
+      <section class="card">
+        <h2>Afastamentos (INSS) <span class="tag">Art. 133 CLT</span></h2>
+        <div id="lista"></div>
+        <button class="btn btn-link" id="add">+ Adicionar afastamento</button>
+      </section>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="calc">Calcular direito</button>
+        <button class="btn btn-ghost" id="limpar">Limpar</button>
+      </div>
+      <div id="erro" class="erro" hidden></div>
+    </div>
+
+    <div class="col">
+      <div id="resultados">
+        <div class="card empty">
+          <strong>Aguardando dados</strong>
+          Informe o início do período aquisitivo e os afastamentos para verificar o direito às férias.
+        </div>
+      </div>
+
+      <div class="card regra">
+        <h2>Regra aplicada</h2>
+        <ul>
+          <li>Afastamento de <strong>até 180 dias</strong> no período aquisitivo: <span class="ok-t">direito mantido</span>.</li>
+          <li>Afastamento <strong>superior a 180 dias</strong>: <span class="lost-t">perda do direito</span>.</li>
+          <li>Com a perda, um <strong>novo período aquisitivo</strong> inicia-se no retorno ao trabalho.</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer>Ferramenta de apoio — o resultado não substitui a análise do processo.</footer>
+</div>
+
+<script>
+/* ===== Funções de data (UTC, sem bibliotecas externas) ===== */
+const DIA = 86400000;
+function parseISO(s){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || '');
+  if(!m) return null;
+  const d = new Date(Date.UTC(+m[1], +m[2]-1, +m[3]));
+  return isNaN(d) ? null : d;
+}
+function addDays(d,n){ return new Date(d.getTime() + n*DIA); }
+function addYears(d,n){
+  const y = d.getUTCFullYear()+n, mo = d.getUTCMonth();
+  const ultimo = new Date(Date.UTC(y, mo+1, 0)).getUTCDate(); // trata 29/02
+  return new Date(Date.UTC(y, mo, Math.min(d.getUTCDate(), ultimo)));
+}
+function diffDays(a,b){ return Math.round((a-b)/DIA); }
+function iso(d){ return d.toISOString().slice(0,10); }
+function br(d){ const [y,m,dd] = iso(d).split('-'); return `${dd}/${m}/${y}`; }
+
+function diasIntersecao(ip, fp, ia, fa){
+  if (ip > fa || ia > fp) return 0;
+  const ini = ip > ia ? ip : ia;
+  const fim = fp < fa ? fp : fa;
+  return diffDays(fim, ini) + 1;
+}
+
+/* ===== Lógica de cálculo (mesma regra da ferramenta original) ===== */
+function calcularDireitoFerias(inicioStr, afastamentos){
+  const inicioGeral = parseISO(inicioStr);
+  if(!inicioGeral) throw new Error('Data de início inválida.');
+
+  const validos = afastamentos
+    .map(a => ({inicio: parseISO(a.inicio), fim: parseISO(a.fim)}))
+    .filter(a => a.inicio && a.fim && a.inicio <= a.fim)
+    .sort((a,b) => a.inicio - b.inicio);
+
+  if(validos.length === 0){
+    const fim = addDays(addYears(inicioGeral,1), -1);
+    return [{exercicio: fim.getUTCFullYear(), inicio: inicioGeral, fim, dias: 0,
+             perdeu: false, explicacao: 'Sem afastamentos registrados.', novo: false}];
+  }
+
+  const resultados = [];
+  const dataLimite = addYears(validos[validos.length-1].fim, 1);
+  let inicioAtual = inicioGeral, novoCiclo = false;
+
+  while(inicioAtual < dataLimite){
+    const fimAtual = addDays(addYears(inicioAtual,1), -1);
+    let total = 0, maiorFim = null;
+
+    for(const af of validos){
+      const d = diasIntersecao(inicioAtual, fimAtual, af.inicio, af.fim);
+      if(d > 0){
+        total += d;
+        if(!maiorFim || af.fim > maiorFim) maiorFim = af.fim;
+      }
+    }
+
+    const perdeu = total > 180;
+    resultados.push({
+      exercicio: fimAtual.getUTCFullYear(),
+      inicio: inicioAtual, fim: fimAtual, dias: total, perdeu,
+      explicacao: perdeu
+        ? `Total de ${total} dias de afastamento. Direito perdido (>180 dias). Novo período iniciará após o retorno.`
+        : `Total de ${total} dias de afastamento. Direito mantido.`,
+      novo: novoCiclo
+    });
+
+    if(perdeu && maiorFim){ inicioAtual = addDays(maiorFim,1); novoCiclo = true; }
+    else { inicioAtual = addDays(fimAtual,1); novoCiclo = false; }
+  }
+  return resultados;
+}
+
+/* ===== Interface ===== */
+let afs = [{inicio:'', fim:''}];
+const lista = document.getElementById('lista');
+const erroEl = document.getElementById('erro');
+const resEl = document.getElementById('resultados');
+const vazio = resEl.innerHTML;
+
+function renderLista(){
+  lista.innerHTML = '';
+  afs.forEach((a,i) => {
+    const div = document.createElement('div');
+    div.className = 'af';
+    div.innerHTML = `<div class="num">${i+1}</div>
+      <div class="grid2">
+        <div><label>Data inicial</label><input type="date" data-i="${i}" data-f="inicio" value="${a.inicio}"></div>
+        <div><label>Data final</label><input type="date" data-i="${i}" data-f="fim" value="${a.fim}"></div>
+      </div>
+      ${afs.length > 1 ? `<button class="del" title="Remover afastamento" data-del="${i}">✕</button>` : '<span></span>'}`;
+    lista.appendChild(div);
+  });
+}
+lista.addEventListener('input', e => {
+  const t = e.target;
+  if(t.dataset.f) afs[+t.dataset.i][t.dataset.f] = t.value;
+});
+lista.addEventListener('click', e => {
+  const i = e.target.dataset.del;
+  if(i !== undefined && afs.length > 1){ afs.splice(+i,1); renderLista(); }
+});
+document.getElementById('add').onclick = () => { afs.push({inicio:'', fim:''}); renderLista(); };
+
+function mostrarErro(msg){ erroEl.textContent = msg; erroEl.hidden = !msg; }
+
+document.getElementById('calc').onclick = () => {
+  mostrarErro('');
+  const inicio = document.getElementById('inicio').value;
+  if(!inicio){ mostrarErro('Informe a data de início do período aquisitivo.'); return; }
+  let res;
+  try { res = calcularDireitoFerias(inicio, afs); }
+  catch(err){ mostrarErro('Não foi possível calcular. Verifique se as datas estão corretas.'); return; }
+
+  let html = `<div class="reshead"><h3>Resultado da análise</h3><span>Art. 133, III — CLT</span></div>`;
+  res.forEach(r => {
+    if(r.novo){
+      html += `<div class="novo">Novo período aquisitivo: <b>${br(r.inicio)} a ${br(r.fim)}</b>, referente ao exercício de <b>${r.exercicio}</b>.</div>`;
+    }
+    html += `<div class="card res ${r.perdeu ? 'lost':''}">
+      <div class="top">
+        <div>
+          <div class="exer">Exercício ${r.exercicio}${r.novo ? '<span class="pill-novo">Novo ciclo</span>' : ''}</div>
+          <div class="periodo">${br(r.inicio)} <span>a</span> ${br(r.fim)}</div>
+        </div>
+        <span class="status ${r.perdeu ? 'lost':'ok'}">${r.perdeu ? 'Direito perdido' : 'Direito mantido'}</span>
+      </div>
+      <div class="meta"><span>Dias de afastamento no período</span><b class="${r.dias > 180 ? 'red':''}">${r.dias} dias</b></div>
+      <p class="exp">${r.explicacao}</p>
+    </div>`;
+  });
+  resEl.innerHTML = html;
+};
+
+document.getElementById('limpar').onclick = () => {
+  document.getElementById('inicio').value = '';
+  afs = [{inicio:'', fim:''}];
+  renderLista(); mostrarErro(''); resEl.innerHTML = vazio;
+};
+
+renderLista();
+</script>
+</body>
+</html>
